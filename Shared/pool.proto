@@ -10,10 +10,13 @@ service PoolGame {
     rpc SetPlayerInfo (AuthedPlayerInRoom) returns (google.protobuf.Empty) {} //sets the info about yourself (auth is needed) i.e. name
     rpc StartGame(AuthedPlayerInRoom) returns (google.protobuf.Empty) {}
 
-    rpc GetGameState(RoomID) returns (GameState) {} //gets current game state 
+    rpc GetTurnId(RoomID) returns (TurnId) {} //gets current turn id
     rpc PostTurn(Turn) returns (google.protobuf.Empty) {} //posts the moves you made on your turn
-    rpc CheckWinState (RoomID) returns (WinState) {} //checks who won the game
     rpc GetPreviousTurn (RoomID) returns (Turn) {} //gets the move made on the previous turn.
+}
+
+message TurnId {
+    int32 turn_id = 1;
 }
 
 message AuthedPlayerInRoom {
@@ -63,17 +66,6 @@ message Ball {
     int32 index = 4;
 }
 
-message GameState {
-    repeated Ball balls = 1;
-    repeated int32 scores = 2; //array of player scores
-    //whether p1 is using solid or striped balls
-    //0: not chosen yet
-    //1: striped
-    //2: solid
-    int32 p1_solid = 3; 
-    bool p1_turn = 4;
-}
-
 message Turn {
     repeated Move moves = 1; //repeated to allow multiple actions in one turn (happens if the cue ball goes in the hole or if you hit the ball mutliple times)
     RoomID room_id = 2;
@@ -98,12 +90,4 @@ message PlaceMove {
 enum MoveType {
     Strike = 0; //hit the cue ball
     Place = 1; //place the cue ball somewhere
-}
-
-message WinState {
-    //0: still going
-    //1: p1 wins
-    //2: p2 wins
-    //3: draw??? idk how pool works
-    int32 win_state = 1;
 }

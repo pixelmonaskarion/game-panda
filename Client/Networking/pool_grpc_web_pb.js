@@ -8,7 +8,7 @@
 // versions:
 // 	protoc-gen-grpc-web v1.4.2
 // 	protoc              v3.20.3
-// source: pool.proto
+// source: Shared/pool.proto
 
 
 /* eslint-disable */
@@ -385,13 +385,13 @@ proto.pool.PoolGamePromiseClient.prototype.startGame =
  * @const
  * @type {!grpc.web.MethodDescriptor<
  *   !proto.pool.RoomID,
- *   !proto.pool.GameState>}
+ *   !proto.pool.TurnId>}
  */
-const methodDescriptor_PoolGame_GetGameState = new grpc.web.MethodDescriptor(
-  '/pool.PoolGame/GetGameState',
+const methodDescriptor_PoolGame_GetTurnId = new grpc.web.MethodDescriptor(
+  '/pool.PoolGame/GetTurnId',
   grpc.web.MethodType.UNARY,
   proto.pool.RoomID,
-  proto.pool.GameState,
+  proto.pool.TurnId,
   /**
    * @param {!proto.pool.RoomID} request
    * @return {!Uint8Array}
@@ -399,7 +399,7 @@ const methodDescriptor_PoolGame_GetGameState = new grpc.web.MethodDescriptor(
   function(request) {
     return request.serializeBinary();
   },
-  proto.pool.GameState.deserializeBinary
+  proto.pool.TurnId.deserializeBinary
 );
 
 
@@ -408,18 +408,18 @@ const methodDescriptor_PoolGame_GetGameState = new grpc.web.MethodDescriptor(
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.pool.GameState)}
+ * @param {function(?grpc.web.RpcError, ?proto.pool.TurnId)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.pool.GameState>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.pool.TurnId>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.pool.PoolGameClient.prototype.getGameState =
+proto.pool.PoolGameClient.prototype.getTurnId =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/pool.PoolGame/GetGameState',
+      '/pool.PoolGame/GetTurnId',
       request,
       metadata || {},
-      methodDescriptor_PoolGame_GetGameState,
+      methodDescriptor_PoolGame_GetTurnId,
       callback);
 };
 
@@ -429,16 +429,16 @@ proto.pool.PoolGameClient.prototype.getGameState =
  *     request proto
  * @param {?Object<string, string>=} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.pool.GameState>}
+ * @return {!Promise<!proto.pool.TurnId>}
  *     Promise that resolves to the response
  */
-proto.pool.PoolGamePromiseClient.prototype.getGameState =
+proto.pool.PoolGamePromiseClient.prototype.getTurnId =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/pool.PoolGame/GetGameState',
+      '/pool.PoolGame/GetTurnId',
       request,
       metadata || {},
-      methodDescriptor_PoolGame_GetGameState);
+      methodDescriptor_PoolGame_GetTurnId);
 };
 
 
@@ -500,67 +500,6 @@ proto.pool.PoolGamePromiseClient.prototype.postTurn =
       request,
       metadata || {},
       methodDescriptor_PoolGame_PostTurn);
-};
-
-
-/**
- * @const
- * @type {!grpc.web.MethodDescriptor<
- *   !proto.pool.RoomID,
- *   !proto.pool.WinState>}
- */
-const methodDescriptor_PoolGame_CheckWinState = new grpc.web.MethodDescriptor(
-  '/pool.PoolGame/CheckWinState',
-  grpc.web.MethodType.UNARY,
-  proto.pool.RoomID,
-  proto.pool.WinState,
-  /**
-   * @param {!proto.pool.RoomID} request
-   * @return {!Uint8Array}
-   */
-  function(request) {
-    return request.serializeBinary();
-  },
-  proto.pool.WinState.deserializeBinary
-);
-
-
-/**
- * @param {!proto.pool.RoomID} request The
- *     request proto
- * @param {?Object<string, string>} metadata User defined
- *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.pool.WinState)}
- *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.pool.WinState>|undefined}
- *     The XHR Node Readable Stream
- */
-proto.pool.PoolGameClient.prototype.checkWinState =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/pool.PoolGame/CheckWinState',
-      request,
-      metadata || {},
-      methodDescriptor_PoolGame_CheckWinState,
-      callback);
-};
-
-
-/**
- * @param {!proto.pool.RoomID} request The
- *     request proto
- * @param {?Object<string, string>=} metadata User defined
- *     call metadata
- * @return {!Promise<!proto.pool.WinState>}
- *     Promise that resolves to the response
- */
-proto.pool.PoolGamePromiseClient.prototype.checkWinState =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/pool.PoolGame/CheckWinState',
-      request,
-      metadata || {},
-      methodDescriptor_PoolGame_CheckWinState);
 };
 
 

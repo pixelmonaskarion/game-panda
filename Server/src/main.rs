@@ -10,13 +10,8 @@ pub mod pool {
     tonic::include_proto!("pool"); // The string specified here must match the proto package name
 }
 
-mod physics;
-use physics::*;
-
 const DEFAULT_PLAYER_NAME: &str = "Guest";
 const DEFAULT_ROOM_NAME: &str = "Game Panda Pool";
-
-const BALL_DIAMETER: f32 = 0.05715;
 
 #[derive(Debug, Default)]
 struct PoolServer {
@@ -29,8 +24,8 @@ struct ServerRoom {
     room_id: String,
     room_name: String,
     game_started: bool,
-    game_state: Option<GameState>,
     previous_turn: Option<Turn>,
+    turn_id: i32,
 }
 
 impl ServerRoom {
@@ -40,8 +35,8 @@ impl ServerRoom {
             room_id,
             room_name: DEFAULT_ROOM_NAME.to_string(),
             game_started: false,
-            game_state: None,
             previous_turn: None,
+            turn_id: 0,
         }
     }
 }
@@ -67,39 +62,6 @@ impl ServerPlayer {
             player,
         }
     }
-}
-
-fn setup_game_state() -> GameState {
-    let mut balls = Vec::new();
-    let starting_positions = vec![
-        vec![0.0,0.0],
-        vec![0.0, (BALL_DIAMETER)],
-        vec![0.0, (BALL_DIAMETER)*2.0],
-        vec![0.0, (BALL_DIAMETER)*3.0],
-        vec![0.0, (BALL_DIAMETER)*4.0],
-        vec![(BALL_DIAMETER/2.0)*3.0_f32.sqrt(), (BALL_DIAMETER/2.0)],
-        vec![(BALL_DIAMETER/2.0)*3.0_f32.sqrt(), (BALL_DIAMETER/2.0)+(BALL_DIAMETER)],
-        vec![(BALL_DIAMETER/2.0)*3.0_f32.sqrt(), (BALL_DIAMETER/2.0)+ (BALL_DIAMETER*2.0)],
-        vec![(BALL_DIAMETER/2.0)*3.0_f32.sqrt(), (BALL_DIAMETER/2.0) + (BALL_DIAMETER*3.0)],
-        vec![(BALL_DIAMETER/2.0)*3.0_f32.sqrt()*2.0, (BALL_DIAMETER)],
-        vec![(BALL_DIAMETER/2.0)*3.0_f32.sqrt()*2.0, (BALL_DIAMETER)+(BALL_DIAMETER)],
-        vec![(BALL_DIAMETER/2.0)*3.0_f32.sqrt()*2.0, (BALL_DIAMETER)+ (BALL_DIAMETER*2.0)],
-        vec![(BALL_DIAMETER/2.0)*3.0_f32.sqrt()*3.0, (BALL_DIAMETER) + BALL_DIAMETER/2.0],
-        vec![(BALL_DIAMETER/2.0)*3.0_f32.sqrt()*3.0, (BALL_DIAMETER)+(BALL_DIAMETER) + BALL_DIAMETER/2.0],
-        vec![(BALL_DIAMETER/2.0)*3.0_f32.sqrt()*4.0, (BALL_DIAMETER) + BALL_DIAMETER],
-        vec![(BALL_DIAMETER/2.0)*3.0_f32.sqrt()*4.0+1.42, (BALL_DIAMETER) + BALL_DIAMETER]
-    ];
-
-    for (index, pos) in starting_positions.iter().enumerate() {
-        balls.push(Ball {pos: pos.clone(), vel: vec![0.0,0.0], in_play: true, index: index as i32})
-    }
-
-    return GameState { 
-        balls, 
-        scores: vec![0,0], 
-        p1_solid: 0, 
-        p1_turn: true 
-    };
 }
 
 #[tonic::async_trait]
@@ -188,8 +150,7 @@ impl PoolGame for PoolServer {
         if req.get_ref().room_id.is_some() {
             if rooms_ref.contains_key(&req.get_ref().room_id.as_ref().unwrap().room_code) {
                 let room = rooms_ref.get_mut(&req.get_ref().room_id.as_ref().unwrap().room_code).unwrap();
-                let game_state = setup_game_state();
-                room.game_state = Some(game_state);
+                room.game_started = true;
                 return Ok(Response::new(()));
             } else {
                 return Err(Status::invalid_argument("room does not exist"));
@@ -198,50 +159,25 @@ impl PoolGame for PoolServer {
             return Err(Status::invalid_argument("field(s) is null"));
         }
     }
-    async fn get_game_state(&self, req: Request<RoomId>) -> Result<Response<GameState>, Status> {
-        let mut rooms_look = self.rooms.lock();
-        let rooms_ref = rooms_look.as_mut().unwrap();
-
-        if rooms_ref.contains_key(&req.get_ref().room_code) {
-            let room = rooms_ref.get_mut(&req.get_ref().room_code).unwrap();
-            if room.game_started && room.game_state.is_some() {
-                let game_state = room.game_state.as_ref().unwrap();
-                return Ok(Response::new(GameState { balls: game_state.balls.clone(), scores: game_state.scores.clone(), p1_solid: game_state.p1_solid, p1_turn: game_state.p1_turn }))
-            } else {
-                return Err(Status::unavailable("game is not started yet"));
-            }
-        } else {
-            return Err(Status::invalid_argument("room does not exist"));
-        }
-    }
     async fn post_turn(&self, req: Request<Turn>) -> Result<Response<()>, Status> {
-        todo!();
-    }
-    async fn check_win_state(&self, req: Request<RoomId>) -> Result<Response<WinState>, Status> {
         let mut rooms_look = self.rooms.lock();
         let rooms_ref = rooms_look.as_mut().unwrap();
-
-        if rooms_ref.contains_key(&req.get_ref().room_code) {
-            let room = rooms_ref.get_mut(&req.get_ref().room_code).unwrap();
-            if room.game_started && room.game_state.is_some() {
-                let game_state = room.game_state.as_ref().unwrap();
-                let mut in_play = Vec::new();
-                let mut win_state = 0;
-                for ball in &game_state.balls {
-                    in_play.push(ball.in_play);
+        if req.get_ref().room_id.is_some() && req.get_ref().player_token.is_some() {
+            if rooms_ref.contains_key(&req.get_ref().room_id.as_ref().unwrap().room_code) {
+                let room = rooms_ref.get_mut(&req.get_ref().room_id.as_ref().unwrap().room_code).unwrap();
+                if room.players[(room.turn_id % 2) as usize].token != req.get_ref().player_token.as_ref().unwrap().player_token {
+                    return Err(Status::permission_denied("it is not your turn"));
                 }
-                if !in_play[0..6].contains(&true) {
-                    win_state = game_state.p1_solid;
-                }
-                if !in_play[8..14].contains(&true) {
-                    win_state = !(game_state.p1_solid != 1) as i32 + 1;
-                }
-                return Ok(Response::new(WinState { win_state }));
+                let mut turn = req.get_ref().clone();
+                turn.player_token = None;
+                room.previous_turn = Some(turn);
+                room.turn_id += 1;
+                return Ok(Response::new(()));
             } else {
-                return Err(Status::unavailable("game is not started yet"));
+                return Err(Status::invalid_argument("room does not exist"));
             }
         } else {
-            return Err(Status::invalid_argument("room does not exist"));
+            return Err(Status::invalid_argument("field(s) is null"));
         }
     }
     async fn get_previous_turn(&self, req: Request<RoomId>) -> Result<Response<Turn>, Status> {
@@ -255,6 +191,18 @@ impl PoolGame for PoolServer {
             } else {
                 return Err(Status::unavailable("no previous turn"));
             }
+        } else {
+            return Err(Status::invalid_argument("room does not exist"));
+        }
+    }
+
+    async fn get_turn_id(&self, req: Request<RoomId>) -> Result<Response<TurnId>, Status> {
+        let mut rooms_look = self.rooms.lock();
+        let rooms_ref = rooms_look.as_mut().unwrap();
+
+        if rooms_ref.contains_key(&req.get_ref().room_code) {
+            let room = rooms_ref.get_mut(&req.get_ref().room_code).unwrap();
+            return Ok(Response::new(TurnId { turn_id: room.turn_id }));
         } else {
             return Err(Status::invalid_argument("room does not exist"));
         }
