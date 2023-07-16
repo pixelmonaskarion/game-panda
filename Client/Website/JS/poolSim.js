@@ -46,8 +46,8 @@ VELOCITY_DEADZONE = 0.05;
 
 POCKET_SIZE = 0.1; //meters
 
-mouseDownPos = createVector();
-mouseUpPos = createVector();
+mouseDownPos;
+mouseUpPos;
 mouseIsDragged;
 ballColors;
 

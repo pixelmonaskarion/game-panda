@@ -2,7 +2,7 @@ const {RoomID, AuthedPlayerInRoom, AuthedPlayer, PlayerToken, Turn, Move, MoveTy
 const {PoolGameClient} = require('./pool_grpc_web_pb.js');
 import google_protobuf_empty_pb from 'google-protobuf/google/protobuf/empty_pb.js'
 
-var client = new PoolGameClient('http://chrissytopher.com:50051');
+var client = new PoolGameClient('http://localhost:50051');
 
 async function createGame() {
 	let promise = new Promise((resolve, reject) => {
@@ -100,9 +100,9 @@ async function setPlayerInfo(room_id, token, player_id, name) {
 
 async function startGame(room_id, playerToken) {
 	let req = new AuthedPlayerInRoom();
-	let room_id = new RoomID();
-	room_id.setRoomCode(room_id);
-	req.setRoomId(room_id);
+	let room_id_proto = new RoomID();
+	room_id_proto.setRoomCode(room_id);
+	req.setRoomId(room_id_proto);
 	let authed_player = new AuthedPlayer();
 	let player_token = new PlayerToken();
 	player_token.setPlayerToken(playerToken);
