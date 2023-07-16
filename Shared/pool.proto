@@ -1,0 +1,109 @@
+syntax = "proto3";
+package pool;
+
+import "google/protobuf/empty.proto";
+
+service PoolGame {
+    rpc CreateRoom(google.protobuf.Empty) returns (RoomCreation) {} //creates a room
+    rpc JoinRoom (RoomID) returns (RoomJoin) {} //joins a already created room
+    rpc GetRoom(RoomID) returns (Room) {} //gets information about a room
+    rpc SetPlayerInfo (AuthedPlayerInRoom) returns (google.protobuf.Empty) {} //sets the info about yourself (auth is needed) i.e. name
+    rpc StartGame(AuthedPlayerInRoom) returns (google.protobuf.Empty) {}
+
+    rpc GetGameState(RoomID) returns (GameState) {} //gets current game state 
+    rpc PostTurn(Turn) returns (google.protobuf.Empty) {} //posts the moves you made on your turn
+    rpc CheckWinState (RoomID) returns (WinState) {} //checks who won the game
+    rpc GetPreviousTurn (RoomID) returns (Turn) {} //gets the move made on the previous turn.
+}
+
+message AuthedPlayerInRoom {
+    RoomID room_id = 1;
+    AuthedPlayer authed_player = 2;
+}
+
+message RoomCreation {
+    RoomID room_id = 1;
+    PlayerToken player_token = 2; //at least right now, players will not need to make accounts so tokens will be given to players for auth
+}
+
+message RoomJoin {
+    PlayerToken player_token = 1;
+}
+
+message RoomID {
+    string room_code = 1;
+}
+
+message PlayerToken {
+    string player_token = 1;
+}
+
+message Player {
+    int32 player_id = 1;
+    string name = 2;
+}
+
+message AuthedPlayer {
+    int32 player_id = 1;
+    string name = 2;
+    PlayerToken player_token = 3;
+}
+
+message Room {
+    RoomID room_id = 1;
+    string room_name = 2;
+    repeated Player players = 3;
+    bool game_started = 4;
+}
+
+message Ball {
+    repeated float pos = 1;
+    repeated float vel = 2;
+    bool in_play = 3;
+    int32 index = 4;
+}
+
+message GameState {
+    repeated Ball balls = 1;
+    repeated int32 scores = 2; //array of player scores
+    //whether p1 is using solid or striped balls
+    //0: not chosen yet
+    //1: striped
+    //2: solid
+    int32 p1_solid = 3; 
+    bool p1_turn = 4;
+}
+
+message Turn {
+    repeated Move moves = 1; //repeated to allow multiple actions in one turn (happens if the cue ball goes in the hole or if you hit the ball mutliple times)
+    RoomID room_id = 2;
+    int32 player_id = 3;
+    PlayerToken player_token = 4;
+}
+
+message Move {
+    MoveType type = 1;
+    StrikeMove strike_move = 2;
+    PlaceMove place_move = 3;
+}
+
+message StrikeMove {
+    repeated float vel = 1; //new velocity of the cue ball
+}
+
+message PlaceMove {
+    repeated float pos = 1; //position the cue ball was placed
+}
+
+enum MoveType {
+    Strike = 0; //hit the cue ball
+    Place = 1; //place the cue ball somewhere
+}
+
+message WinState {
+    //0: still going
+    //1: p1 wins
+    //2: p2 wins
+    //3: draw??? idk how pool works
+    int32 win_state = 1;
+}
