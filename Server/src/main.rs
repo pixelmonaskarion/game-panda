@@ -147,13 +147,20 @@ impl PoolGame for PoolServer {
     async fn start_game(&self, req: Request<AuthedPlayerInRoom>) -> Result<Response<()>, Status> {
         let mut rooms_look = self.rooms.lock();
         let rooms_ref = rooms_look.as_mut().unwrap();
-        if req.get_ref().room_id.is_some() {
-            if rooms_ref.contains_key(&req.get_ref().room_id.as_ref().unwrap().room_code) {
-                let room = rooms_ref.get_mut(&req.get_ref().room_id.as_ref().unwrap().room_code).unwrap();
-                room.game_started = true;
-                return Ok(Response::new(()));
+        if req.get_ref().room_id.is_some() && req.get_ref().authed_player.is_some() {
+            if req.get_ref().authed_player.as_ref().unwrap().player_token.is_some() {
+                if rooms_ref.contains_key(&req.get_ref().room_id.as_ref().unwrap().room_code) {
+                    let room = rooms_ref.get_mut(&req.get_ref().room_id.as_ref().unwrap().room_code).unwrap();
+                    if room.players[0].token != req.get_ref().authed_player.as_ref().unwrap().player_token.as_ref().unwrap().player_token {
+                        return Err(Status::permission_denied("you are not the host"));
+                    }
+                    room.game_started = true;
+                    return Ok(Response::new(()));
+                } else {
+                    return Err(Status::invalid_argument("room does not exist"));
+                }
             } else {
-                return Err(Status::invalid_argument("room does not exist"));
+                return Err(Status::invalid_argument("field(s) is null")); 
             }
         } else {
             return Err(Status::invalid_argument("field(s) is null"));
