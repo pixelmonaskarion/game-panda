@@ -1,4 +1,4 @@
-const {RoomID, AuthedPlayerInRoom, AuthedPlayer, PlayerToken, Turn, Move, MoveType} = require('./pool_pb.js');
+const {RoomID, AuthedPlayerInRoom, AuthedPlayer, PlayerToken, Turn, Move, MoveType, StrikeMove, PlaceMove} = require('./pool_pb.js');
 const {PoolGameClient} = require('./pool_grpc_web_pb.js');
 import google_protobuf_empty_pb from 'google-protobuf/google/protobuf/empty_pb.js'
 
@@ -188,22 +188,22 @@ async function getPreviousMove(room_id) {
 	return promise;
 }
 
-function StrikeMove(vel) {
+function CreateStrikeMove(vel) {
 	let move = new Move();
 	let strike_move = new StrikeMove();
-	strike_move.setVel(vel);
+	strike_move.setVelList(vel);
 	move.setStrikeMove(strike_move);
-	move.setMoveType(MoveType.STRIKE);
+	move.setType(MoveType.STRIKE);
 	return move;
 }
 
-function PlaceMove(pos) {
+function CreatePlaceMove(pos) {
 	let move = new Move()
 	let place_move = new PlaceMove();
-	place_move.setPos(pos);
+	place_move.setPosList(pos);
 	move.setPlaceMove(place_move);
-	move.setMoveType(MoveType.PLACE);
+	move.setType(MoveType.PLACE);
 	return move;
 }
 
-window.gp_client = {createGame, joinRoom, getRoom, setPlayerInfo, startGame, getTurnId, postMove, getPreviousMove, StrikeMove, PlaceMove};
+window.gp_client = {createGame, joinRoom, getRoom, setPlayerInfo, startGame, getTurnId, postMove, getPreviousMove, CreateStrikeMove, CreatePlaceMove};

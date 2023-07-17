@@ -6,8 +6,9 @@ async function test() {
 
 
     let gameStart = await window.gp_client.startGame(create_game_res.room_id, create_game_res.player_token);
-    let turn = await window.gp_client.getTurnId(create_game_res.room_id);
-    //let turn = await window.gp_client.postMove(null, create_game_res.room_id, 0, create_game_res.player_token);
+    //let turn = await window.gp_client.getTurnId(create_game_res.room_id);
+    let move = gp_client.CreatePlaceMove([1, 0]);
+    let turn = await window.gp_client.postMove(null, create_game_res.room_id, 0, create_game_res.player_token);
     console.log(turn);
 }
 
