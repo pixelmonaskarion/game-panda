@@ -4,9 +4,11 @@ async function test() {
     let game = await gp_client.getRoom(create_game_res.room_id);
     console.log(game);
 
-    console.log(window.gp_client);
+
     let gameStart = await window.gp_client.startGame(create_game_res.room_id, create_game_res.player_token);
-    
+    let turn = await window.gp_client.getTurnId(create_game_res.room_id);
+    //let turn = await window.gp_client.postMove(null, create_game_res.room_id, 0, create_game_res.player_token);
+    console.log(turn);
 }
 
 test();

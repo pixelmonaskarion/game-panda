@@ -132,7 +132,7 @@ async function getTurnId(room_id) {
 				reject(err);
 			} else {
 				let parsed = {
-					turn_id: res.getTurnId().getTurnId(),
+					turn_id: res.getTurnId(),
 					response: res,
 				};
 				resolve(parsed);
@@ -153,7 +153,7 @@ async function postMove(moves, room_id_in, player_id_in, player_token_in) {
 	req.setPlayerToken(playerToken);
 	req.setMovesList(moves);
 	let promise = new Promise((resolve, reject) => {
-		client.postMove(req, {}, (err, res) => {
+		client.postTurn(req, {}, (err, res) => {
 			if (err) {
 				reject(err);
 			} else {
