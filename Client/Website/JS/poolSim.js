@@ -46,29 +46,8 @@ VELOCITY_DEADZONE = 0.05;
 
 POCKET_SIZE = 0.1; //meters
 
-mouseDownPos;
-mouseUpPos;
-mouseIsDragged;
-ballColors;
 
-//score things
-player1Score;
-player2Score;
-
-player1Solid;
-player1Turn;
-
-turnInProgress;
-
-anotherTurn;
-
-popupText;
-
-whiteBallPocketed;
-placingWhiteBall;
-
-
-function setup()
+function setupVariables()
 {
     mouseIsDragged = false;
     //hardcoded values for starting pool positions (in meters)
@@ -133,6 +112,17 @@ function setup()
     whiteBallPocketed = false;
     placingWhiteBall = false;
 
+    moves = [];
+}
+
+async function setup()
+{
+
+    let create_game_res = await gp_client.createGame();
+    console.log(create_game_res);
+
+    setupVariables();
+
     createCanvas(WINDOW_WIDTH, WINDOW_HEIGHT);
     background(0);
 
@@ -142,6 +132,8 @@ function setup()
         balls[i].index = i;
     }
 
+    //automatically starting the game, should change this
+    await window.gp_client.startGame(create_game_res.room_id, create_game_res.player_token);
 
 }
 
@@ -340,7 +332,7 @@ function endTurn()
     }
 }
 
-function draw()
+function drawTable()
 {
     background("#652102");
     rectMode(CENTER);
@@ -351,16 +343,17 @@ function draw()
     stroke(0);
     textAlign(CENTER, CENTER);
     text(popupText, WINDOW_WIDTH/2, WINDOW_HEIGHT/2);
-
-    if (placingWhiteBall)
-        placeWhiteBall();
-
     
     for (var i = 0; i < pocketPositions.length; i++)
     {
         fill("#808000");
         circle(pocketPositions[i].x * SCALE_FACTOR, pocketPositions[i].y * SCALE_FACTOR, POCKET_SIZE * SCALE_FACTOR);
     }
+}
+
+function draw()
+{
+    drawTable();
 
     //adding line from ball showing direction and magnitude
     if (mouseIsDragged == true && !turnInProgress)
@@ -369,6 +362,9 @@ function draw()
         line(balls[15].pos.x, balls[15].pos.y, balls[15].pos.x + p5.Vector.sub(createVector(mouseX, mouseY), mouseDownPos).x, balls[15].pos.y + p5.Vector.sub(createVector(mouseX, mouseY), mouseDownPos).y);
         stroke(0);
     }
+
+    if (placingWhiteBall)
+        placeWhiteBall();
     
     if (!placingWhiteBall) {
         for (var i = 0; i < numBalls; i++)

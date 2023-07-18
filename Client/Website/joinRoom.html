@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+        <title>Pool</title>
+        <script src="https://cdn.jsdelivr.net/npm/p5@1.3.1/lib/p5.js"></script>
+        <script src="../Networking/dist/main.js"></script>
+    </head>
+    <body>
+        <script src="JS/joinRoom.js"></script>
+
+        <button onclick="createRoom()">Create Room</button>
+        <br>
+        <input type="text" id="roomIdInput">
+        <button onclick="joinRoom()">Join Room</button>
+
+        <div>
+            <h2 id="roomIdHeader"></h2>
+            <h2 id="roomHeader"></h2>
+            <ul id="playerList">
+                
+            </ul>
+        </div>
+
+        <br>
+        <br>
+        <button onclick="goToRoom()">Start Game</button>
+    </body>
+</html>

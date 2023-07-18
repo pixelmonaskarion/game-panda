@@ -149,7 +149,7 @@ async function postMove(moves, room_id_in, player_id_in, player_token_in) {
 	req.setRoomId(roomId);
 	req.setPlayerId(player_id_in);
 	let playerToken = new PlayerToken();
-	playerToken.setPlayerToken(player_id_in);
+	playerToken.setPlayerToken(player_token_in);
 	req.setPlayerToken(playerToken);
 	req.setMovesList(moves);
 	let promise = new Promise((resolve, reject) => {
