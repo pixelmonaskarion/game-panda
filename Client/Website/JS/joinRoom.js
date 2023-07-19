@@ -1,5 +1,10 @@
-
-
+//prevents restoring state after back arrow to prevent 
+//immediately redirecting back to game.html if the game has already started
+window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+      location.reload();
+    }
+  });
 async function goToRoom()
 {
     if (!gameStarted)
@@ -7,11 +12,19 @@ async function goToRoom()
 
     var para = new URLSearchParams();
     para.append("roomId", roomId);
-    para.append("playerToken", playerToken);
-    para.append("clientId", clientId);
+    setRoomInfo(roomId, playerToken, clientId);
 
-    //TODO: CHANGE THIS
-    location.href = "file:///Users/ben/Repositories/game-panda/Client/Website/index.html?" + para.toString();
+    location.href = window.location.origin+"/Website/game.html?"+para.toString();
+}
+
+function setRoomInfo(roomId, playerToken, clientId)
+{
+    if (!localStorage.getItem("roomInfo")) {
+        localStorage.setItem("roomInfo", JSON.stringify({}));
+    }
+    var roomInfo = JSON.parse(localStorage.getItem("roomInfo"));
+    roomInfo[roomId] = {playerToken: playerToken, clientId: clientId};
+    localStorage.setItem("roomInfo", JSON.stringify(roomInfo));
 }
 
 var roomId;
@@ -47,15 +60,16 @@ async function checkRoom()
 {
     console.log("checking room...");
     let roomHeader = document.getElementById("roomHeader");
-    roomHeader.innerHTML = "Players";
+    roomHeader.innerText = "Players";
 
     let roomIdHeader = document.getElementById("roomIdHeader");
-    roomIdHeader.innerHTML = "Room Id: " + roomId;
+    if (roomIdHeader.innerText != "Room Id: " + roomId) {
+        roomIdHeader.innerText = "Room Id: " + roomId;
+    }
 
     let playerList = document.getElementById("playerList");
-    playerList.innerHTML = "";
-
     let game = await gp_client.getRoom(roomId);
+    playerList.innerText = "";
     console.log(game);
 
     if (game.game_started)
