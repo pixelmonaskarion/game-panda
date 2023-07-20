@@ -30,6 +30,14 @@ async function createRoom()
     setInterval(await checkRoom, 1000);
 }
 
+async function changeName()
+{
+    nameInput = document.getElementById("nameChangeInput");
+
+    console.log(clientId);
+    await window.gp_client.setPlayerInfo(roomId, playerToken, clientId, nameInput.value);
+}
+
 async function joinRoom()
 {
     clientId = 1;

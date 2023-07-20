@@ -96,8 +96,8 @@ function setupVariables()
         createVector(3.1 - 0.13, 1.67-0.125)
     ];
 
-    player1Score = 0;
-    player2Score = 0;
+    clientScore = 0;
+    opponentScore = 0;
 
     //used to check if this is the first frame of our turn to load last move
     clientTurn = true;
@@ -213,6 +213,41 @@ function handleWallCollision(ball)
     }
 }
 
+function checkScore()
+{
+    clientScore = 0;
+    opponentScore = 0;
+
+    if (clientSolid == null)
+        return;
+
+    for (var i = 0; i < numBalls; i++)
+    {
+        if (i <=6 && !balls[i].inPlay)
+        {
+            if (clientSolid)
+            {
+                clientScore++;
+            } else 
+            {
+                opponentScore ++;
+            }
+            
+        }
+
+        if (i >=8 && i <= 14 && !balls[i].inPlay)
+        {
+            if (clientSolid)
+            {
+                opponentScore++;
+            } else 
+            {
+                clientScore ++;
+            }
+        }
+    }
+}
+
 function checkInPocket(ball)
 {
     for (var i = 0; i < pocketPositions.length; i++)
@@ -245,25 +280,25 @@ function checkInPocket(ball)
                 //popup("White Ball Pocketed");
             }
 
-            // if (ball.index <= 6 && player1Solid == null && player1Turn)
-            // {
-            //     player1Solid = true;
-            //     popup("Player 1 is solid");
-            // } else if (ball.index >= 8 && ball.index <= 14 && player1Solid == null && player1Turn)
-            // {
-            //     player1Solid = false;
-            //     popup("Player 1 is striped");
-            // }
+            if (ball.index <= 6 && clientSolid == null && playerMoved)
+            {
+                clientSolid = true;
+                console.log("client is solid");
+            } else if (ball.index >= 8 && ball.index <= 14 && clientSolid == null && playerMoved)
+            {
+                clientSolid = false;
+                console.log("client is striped");
+            }
 
-            // if (ball.index <= 6 && player1Solid == null && !player1Turn)
-            // {
-            //     player1Solid = false;
-            //     popup("Player 1 is striped");
-            // } else if (ball.index >= 8 && ball.index <= 14 && player1Solid == null && !player1Turn)
-            // {
-            //     player1Solid = true;
-            //     popup("Player 1 is solid");
-            // }
+            if (ball.index <= 6 && clientSolid == null && !playerMoved)
+            {
+                clientSolid = false;
+                console.log("client is striped");
+            } else if (ball.index >= 8 && ball.index <= 14 && clientSolid == null && !playerMoved)
+            {
+                clientSolid = true;
+                console.log("client is solid");
+            }
 
 
             // if (ball.index <= 6 && player1Solid == true && player1Turn)
@@ -282,6 +317,14 @@ function checkInPocket(ball)
 
             return;
         }
+    }
+}
+
+function roundBallPositions()
+{
+    for (var i = 0; i < 16; i++)
+    {
+        balls[i].pos = createVector(Math.round(balls[i].pos.x), Math.round(balls[i].pos.y));
     }
 }
 
@@ -364,6 +407,19 @@ async function draw()
     drawTable();
     drawBalls();
 
+    checkScore();
+    textAlign(LEFT);
+    text("You: " + clientScore, 10, 10);
+
+    if (clientSolid != null)
+        text(clientSolid ? "Solid" : "Striped", 20, 23);
+
+    textAlign(RIGHT);
+    text("  Opponent: " + opponentScore, WINDOW_WIDTH-10, 10);
+
+    if (clientSolid != null)
+        text(clientSolid ? "Striped" : "Solid", WINDOW_WIDTH-20, 23);
+
     if (mouseIsDragged && turn % 2 == clientId)
     {
         stroke(255);
@@ -411,7 +467,7 @@ async function draw()
 
                 if (checkEndTurn() && playerMoved)
                 {
-
+                    roundBallPositions();
                     let move = window.gp_client.CreateStrikeMove([playerMoveVel.x, playerMoveVel.y]);
                     if (placeMove != null)
                     {
@@ -429,6 +485,7 @@ async function draw()
                 }  
                 if (checkEndTurn() && playerMoved == false)
                 {
+                    roundBallPositions();
                     simulating = false;
                     turnInProgress = true;
 
@@ -452,7 +509,6 @@ async function draw()
         clientTurn = false;
         return;
     }
-
     
 }
 

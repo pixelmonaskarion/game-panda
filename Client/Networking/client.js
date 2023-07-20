@@ -73,15 +73,17 @@ async function getRoom(room_id) {
 }
 
 async function setPlayerInfo(room_id, token, player_id, name) {
-	let res = new AuthedPlayerInRoom();
+	let req = new AuthedPlayerInRoom();
 	let room_id_proto = new RoomID();
 	room_id_proto.setRoomCode(room_id);
-	res.setRoomId(room_id_proto);
+	req.setRoomId(room_id_proto);
 	let authed_player_proto = new AuthedPlayer();
 	authed_player_proto.setPlayerId(player_id);
 	authed_player_proto.setName(name);
-	authed_player_proto.setPlayerToken(token);
-	res.setAuthedPlayer(authed_player_proto);
+	let player_token = new PlayerToken();
+	player_token.setPlayerToken(token);
+	authed_player_proto.setPlayerToken(player_token);
+	req.setAuthedPlayer(authed_player_proto);
 
 	let promise = new Promise((resolve, reject) => {
 		client.setPlayerInfo(req, {}, (err, res) => {
