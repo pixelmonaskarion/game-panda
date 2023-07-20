@@ -125,7 +125,7 @@ impl PoolGame for PoolServer {
             if rooms_ref.contains_key(&req.get_ref().room_id.as_ref().unwrap().room_code) {
                 let room = rooms_ref.get_mut(&req.get_ref().room_id.as_ref().unwrap().room_code).unwrap();
                 let req_pid = req.get_ref().authed_player.as_ref().unwrap().player_id;
-                if req_pid != 0 || req_pid != 1 {
+                if req_pid != 0 && req_pid != 1 {
                     return Err(Status::invalid_argument("player id is out of bounds"));
                 }
                 if req.get_ref().authed_player.as_ref().unwrap().player_token.is_none() {
