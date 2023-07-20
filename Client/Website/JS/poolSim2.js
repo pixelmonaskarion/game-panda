@@ -123,12 +123,26 @@ function setupVariables()
     placeMove = null;
 }
 
+function getRoomInfo(roomId) {
+    const empty = {clientId: undefined, playerToken: undefined};
+    if (!localStorage.getItem("roomInfo")) {
+        return empty;
+    }
+    var roomInfo = JSON.parse(localStorage.getItem("roomInfo"));
+    if (!roomInfo[roomId]) {
+        return empty;
+    }
+    return roomInfo[roomId];
+}
+
 async function setup()
 {
     params = new URLSearchParams(window.location.search);
     room_id = params.get("roomId");
-    player_token = params.get("playerToken");
-    clientId = params.get("clientId");
+    let room_info = getRoomInfo(room_id);
+    console.log(room_info);
+    player_token = room_info.playerToken;
+    clientId = room_info.clientId;
 
     setupVariables();
 
