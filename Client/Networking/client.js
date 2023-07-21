@@ -209,3 +209,4 @@ function CreatePlaceMove(pos) {
 }
 
 window.gp_client = {createGame, joinRoom, getRoom, setPlayerInfo, startGame, getTurnId, postMove, getPreviousMove, CreateStrikeMove, CreatePlaceMove};
+export default {createGame, joinRoom, getRoom, setPlayerInfo, startGame, getTurnId, postMove, getPreviousMove, CreateStrikeMove, CreatePlaceMove};
